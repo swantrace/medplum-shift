@@ -1,11 +1,11 @@
-import { Button, Center, Group, Modal, TextInput, Title } from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { normalizeErrorString } from '@medplum/core';
-import { OperationOutcome } from '@medplum/fhirtypes';
-import { Document, Form, useMedplum } from '@medplum/react';
-import { IconCircleCheck } from '@tabler/icons-react';
-import { useCallback, useEffect, useState } from 'react';
-import { MfaForm, MfaFormFields } from '../../react/src/auth/MfaForm';
+import { Button, Center, Group, Modal, TextInput, Title } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import { normalizeErrorString } from "@medplum/core";
+import { OperationOutcome } from "@medplum/fhirtypes";
+import { Document, Form, useMedplum } from "@medplum/react";
+import { IconCircleCheck } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
+import { MfaForm, MfaFormFields } from "./AuthMfaForm";
 
 export function MfaPage(): JSX.Element | null {
   const medplum = useMedplum();
@@ -15,12 +15,18 @@ export function MfaPage(): JSX.Element | null {
 
   const fetchStatus = useCallback(() => {
     medplum
-      .get('auth/mfa/status', { cache: 'no-cache' })
+      .get("auth/mfa/status", { cache: "no-cache" })
       .then((response) => {
         setQrCodeUrl(response.enrollQrCode);
         setEnrolled(response.enrolled);
       })
-      .catch((err) => showNotification({ color: 'red', message: normalizeErrorString(err), autoClose: false }));
+      .catch((err) =>
+        showNotification({
+          color: "red",
+          message: normalizeErrorString(err),
+          autoClose: false,
+        })
+      );
   }, [medplum]);
 
   useEffect(() => {
@@ -30,19 +36,27 @@ export function MfaPage(): JSX.Element | null {
   const enableMfa = useCallback(
     (formData: Record<string, string>) => {
       medplum
-        .post('auth/mfa/enroll', formData)
+        .post("auth/mfa/enroll", formData)
         .then(() => {
           setEnrolled(true);
-          showNotification({ color: 'green', message: 'Success' });
+          showNotification({ color: "green", message: "Success" });
         })
-        .catch((err) => showNotification({ color: 'red', message: normalizeErrorString(err), autoClose: false }));
+        .catch((err) =>
+          showNotification({
+            color: "red",
+            message: normalizeErrorString(err),
+            autoClose: false,
+          })
+        );
     },
     [medplum]
   );
 
   const disableMfa = useCallback(
-    async (formData: Record<MfaFormFields, string>): Promise<OperationOutcome> => {
-      return medplum.post('auth/mfa/disable', { token: formData.token });
+    async (
+      formData: Record<MfaFormFields, string>
+    ): Promise<OperationOutcome> => {
+      return medplum.post("auth/mfa/disable", { token: formData.token });
     },
     [medplum]
   );
@@ -54,7 +68,11 @@ export function MfaPage(): JSX.Element | null {
   if (enrolled) {
     return (
       <Document>
-        <Modal title="Disable MFA" opened={disabling} onClose={() => setDisabling(false)}>
+        <Modal
+          title="Disable MFA"
+          opened={disabling}
+          onClose={() => setDisabling(false)}
+        >
           <MfaForm
             onSubmit={async (formData) => {
               // This will throw if MFA failed to disable
@@ -62,10 +80,10 @@ export function MfaPage(): JSX.Element | null {
               setDisabling(false);
               setEnrolled(false);
               showNotification({
-                id: 'mfa-disabled',
-                color: 'green',
-                title: 'Success',
-                message: 'MFA disabled',
+                id: "mfa-disabled",
+                color: "green",
+                title: "Success",
+                message: "MFA disabled",
                 icon: <IconCircleCheck />,
               });
               // We fetch the status so that the MFA QR code is refreshed

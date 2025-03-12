@@ -30,6 +30,7 @@
     "last 1 Chrome versions"
   ],
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.8",
     "@mantine/core": "7.17.1",
     "@mantine/dropzone": "7.17.1",
     "@mantine/hooks": "7.17.1",
@@ -38,10 +39,11 @@
     "@medplum/definitions": "4.0.3",
     "@medplum/fhirtypes": "4.0.3",
     "@medplum/mock": "4.0.3",
-    "@medplum/react": "4.0.3",
+    "@medplum/react": "^4.0.3",
     "@tabler/icons-react": "3.17.0",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.2.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
     "@vitejs/plugin-react": "4.3.4",
@@ -55,5 +57,10 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@testing-library/user-event": "^14.6.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.2"
   }
 }

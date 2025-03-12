@@ -6,18 +6,24 @@ import {
   toTypedValue,
   TypedValue,
   WithId,
-} from '@medplum/core';
-import { Attachment, Binary, Meta, Resource, ResourceType } from '@medplum/fhirtypes';
-import { Job, Queue, QueueBaseOptions, Worker } from 'bullmq';
-import fetch from 'node-fetch';
-import { Readable } from 'stream';
-import { getConfig } from '../config/loader';
-import { MedplumServerConfig } from '../config/types';
-import { tryGetRequestContext, tryRunInRequestContext } from '../context';
-import { getSystemRepo } from '../fhir/repo';
-import { getBinaryStorage } from '../fhir/storage';
-import { getLogger, globalLogger } from '../logger';
-import { parseTraceparent } from '../traceparent';
+} from "@medplum/core";
+import {
+  Attachment,
+  Binary,
+  Meta,
+  Resource,
+  ResourceType,
+} from "@medplum/fhirtypes";
+import { Job, Queue, QueueBaseOptions, Worker } from "bullmq";
+import fetch, { HeadersInit } from "node-fetch";
+import { Readable } from "stream";
+import { getConfig } from "../config/loader";
+import { MedplumServerConfig } from "../config/types";
+import { tryGetRequestContext, tryRunInRequestContext } from "../context";
+import { getSystemRepo } from "../fhir/repo";
+import { getBinaryStorage } from "../fhir/storage";
+import { getLogger, globalLogger } from "../logger";
+import { parseTraceparent } from "../traceparent";
 
 /*
  * The download worker inspects resources,
@@ -38,8 +44,8 @@ export interface DownloadJobData {
   readonly traceId?: string;
 }
 
-const queueName = 'DownloadQueue';
-const jobName = 'DownloadJobData';
+const queueName = "DownloadQueue";
+const jobName = "DownloadJobData";
 let queue: Queue<DownloadJobData> | undefined = undefined;
 let worker: Worker<DownloadJobData> | undefined = undefined;
 
@@ -59,7 +65,7 @@ export function initDownloadWorker(config: MedplumServerConfig): void {
     defaultJobOptions: {
       attempts: 3,
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 1000,
       },
     },
@@ -67,14 +73,21 @@ export function initDownloadWorker(config: MedplumServerConfig): void {
 
   worker = new Worker<DownloadJobData>(
     queueName,
-    (job) => tryRunInRequestContext(job.data.requestId, job.data.traceId, () => execDownloadJob(job)),
+    (job) =>
+      tryRunInRequestContext(job.data.requestId, job.data.traceId, () =>
+        execDownloadJob(job)
+      ),
     {
       ...defaultOptions,
       ...config.bullmq,
     }
   );
-  worker.on('completed', (job) => globalLogger.info(`Completed job ${job.id} successfully`));
-  worker.on('failed', (job, err) => globalLogger.info(`Failed job ${job?.id} with ${err}`));
+  worker.on("completed", (job) =>
+    globalLogger.info(`Completed job ${job.id} successfully`)
+  );
+  worker.on("failed", (job, err) =>
+    globalLogger.info(`Failed job ${job?.id} with ${err}`)
+  );
 }
 
 /**
@@ -117,7 +130,9 @@ export function getDownloadQueue(): Queue<DownloadJobData> | undefined {
  * not to re-evaluate the download.
  * @param resource - The resource that was created or updated.
  */
-export async function addDownloadJobs(resource: WithId<Resource>): Promise<void> {
+export async function addDownloadJobs(
+  resource: WithId<Resource>
+): Promise<void> {
   const ctx = tryGetRequestContext();
   for (const attachment of getAttachments(resource)) {
     if (isExternalUrl(attachment.url)) {
@@ -145,9 +160,9 @@ export async function addDownloadJobs(resource: WithId<Resource>): Promise<void>
 function isExternalUrl(url: string | undefined): url is string {
   return !!(
     url &&
-    !url.startsWith(getConfig().baseUrl + 'fhir/R4/Binary/') &&
+    !url.startsWith(getConfig().baseUrl + "fhir/R4/Binary/") &&
     !url.startsWith(getConfig().storageBaseUrl) &&
-    !url.startsWith('Binary/')
+    !url.startsWith("Binary/")
   );
 }
 
@@ -165,7 +180,9 @@ async function addDownloadJobData(job: DownloadJobData): Promise<void> {
  * Executes a download job.
  * @param job - The download job details.
  */
-export async function execDownloadJob<T extends Resource = Resource>(job: Job<DownloadJobData>): Promise<void> {
+export async function execDownloadJob<T extends Resource = Resource>(
+  job: Job<DownloadJobData>
+): Promise<void> {
   const systemRepo = getSystemRepo();
   const log = getLogger();
   const { resourceType, id, url } = job.data;
@@ -190,27 +207,29 @@ export async function execDownloadJob<T extends Resource = Resource>(job: Job<Do
   const headers: HeadersInit = {};
   const traceId = job.data.traceId;
   if (traceId) {
-    headers['x-trace-id'] = traceId;
+    headers["x-trace-id"] = traceId;
     if (parseTraceparent(traceId)) {
-      headers['traceparent'] = traceId;
+      headers["traceparent"] = traceId;
     }
   }
 
   try {
-    log.info('Requesting content at: ' + url);
+    log.info("Requesting content at: " + url);
     const response = await fetch(url, {
       headers,
     });
 
-    log.info('Received status: ' + response.status);
+    log.info("Received status: " + response.status);
     if (response.status >= 400) {
-      throw new Error('Received status ' + response.status);
+      throw new Error("Received status " + response.status);
     }
 
-    const contentDisposition = response.headers.get('content-disposition') as string | undefined;
-    const contentType = response.headers.get('content-type') as string;
+    const contentDisposition = response.headers.get("content-disposition") as
+      | string
+      | undefined;
+    const contentType = response.headers.get("content-type") as string;
     const binary = await systemRepo.createResource<Binary>({
-      resourceType: 'Binary',
+      resourceType: "Binary",
       contentType,
       meta: {
         project: resource.meta?.project,
@@ -220,19 +239,26 @@ export async function execDownloadJob<T extends Resource = Resource>(job: Job<Do
       },
     });
     if (response.body === null) {
-      throw new Error('Received null response body');
+      throw new Error("Received null response body");
     }
 
     // From node-fetch docs:
     // Note that while the Fetch Standard requires the property to always be a WHATWG ReadableStream, in node-fetch it is a Node.js Readable stream.
-    await getBinaryStorage().writeBinary(binary, contentDisposition, contentType, response.body as Readable);
+    await getBinaryStorage().writeBinary(
+      binary,
+      contentDisposition,
+      contentType,
+      response.body as Readable
+    );
 
-    const updated = JSON.parse(JSON.stringify(resource).replace(url, `Binary/${binary.id}`)) as Resource;
-    (updated.meta as Meta).author = { reference: 'system' };
+    const updated = JSON.parse(
+      JSON.stringify(resource).replace(url, `Binary/${binary.id}`)
+    ) as Resource;
+    (updated.meta as Meta).author = { reference: "system" };
     await systemRepo.updateResource(updated);
-    log.info('Downloaded content successfully');
+    log.info("Downloaded content successfully");
   } catch (ex) {
-    log.info('Download exception: ' + ex);
+    log.info("Download exception: " + ex);
     throw ex;
   }
 }
@@ -244,7 +270,7 @@ function getAttachments(resource: Resource): Attachment[] {
       for (const propertyValue of propertyValues) {
         if (propertyValue) {
           for (const value of arrayify(propertyValue) as TypedValue[]) {
-            if (value.type === 'Attachment') {
+            if (value.type === "Attachment") {
               attachments.push(value.value as Attachment);
             }
           }

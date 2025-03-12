@@ -1,4 +1,4 @@
-import { KeepJobs } from 'bullmq';
+import { KeepJobs } from "bullmq";
 
 export interface MedplumServerConfig {
   port: number;
@@ -24,7 +24,7 @@ export interface MedplumServerConfig {
   /** @deprecated specify `readonlyDatabase.host` and `readonlyDatabase.ssl.require` as needed */
   readonlyDatabaseProxyEndpoint?: string;
   redis: MedplumRedisConfig;
-  emailProvider?: 'none' | 'awsses' | 'smtp';
+  emailProvider?: "none" | "awsses" | "smtp";
   smtp?: MedplumSmtpConfig;
   bullmq?: MedplumBullmqConfig;
   googleClientId?: string;
@@ -52,14 +52,14 @@ export interface MedplumServerConfig {
   heartbeatEnabled?: boolean;
   accurateCountThreshold: number;
   maxSearchOffset?: number;
-  defaultBotRuntimeVersion: 'awslambda' | 'vmcontext';
+  defaultBotRuntimeVersion: "awslambda" | "vmcontext";
   defaultProjectFeatures?: (
-    | 'email'
-    | 'bots'
-    | 'cron'
-    | 'google-auth-required'
-    | 'graphql-introspection'
-    | 'websocket-subscriptions'
+    | "email"
+    | "bots"
+    | "cron"
+    | "google-auth-required"
+    | "graphql-introspection"
+    | "websocket-subscriptions"
   )[];
   defaultRateLimit?: number;
   defaultAuthRateLimit?: number;
@@ -112,6 +112,10 @@ export interface MedplumRedisConfig {
   /** The logical database to use for Redis. See: https://redis.io/commands/select/. Default is `0`. */
   db?: number;
   tls?: Record<string, unknown>;
+  family?: number;
+  maxRetriesPerRequest?: number;
+  connectTimeout?: number;
+  retryStrategy?: (times: number) => number;
 }
 
 export interface MedplumSmtpConfig {

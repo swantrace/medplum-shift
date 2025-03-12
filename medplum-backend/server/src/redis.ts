@@ -1,12 +1,37 @@
-import { sleep } from '@medplum/core';
-import Redis from 'ioredis';
-import { MedplumRedisConfig } from './config/types';
+import { sleep } from "@medplum/core";
+import Redis from "ioredis";
+import { MedplumRedisConfig } from "./config/types";
 
 let redis: Redis | undefined = undefined;
 let redisSubscribers: Set<Redis> | undefined = undefined;
 
 export function initRedis(config: MedplumRedisConfig): void {
-  redis = new Redis(config);
+  // if config.family, config.maxRetriesPerRequest and config.connectTimeout are string, convert them to number
+  if (typeof config.family === "string") {
+    config.family = parseInt(config.family);
+  }
+  if (typeof config.maxRetriesPerRequest === "string") {
+    config.maxRetriesPerRequest = parseInt(config.maxRetriesPerRequest);
+  }
+  if (typeof config.connectTimeout === "string") {
+    config.connectTimeout = parseInt(config.connectTimeout);
+  }
+  redis = new Redis({
+    ...config,
+    retryStrategy(times) {
+      const delay = Math.min(times * 100, 2000);
+      console.log(`Redis retry attempt ${times}, delaying ${delay}ms`);
+      return delay;
+    },
+  });
+
+  redis.on("error", (err) => {
+    console.error("Redis connection error:", err.message);
+  });
+
+  redis.on("connect", () => {
+    console.log("Successfully connected to Redis");
+  });
 }
 
 export async function closeRedis(): Promise<void> {
@@ -37,7 +62,7 @@ export async function closeRedis(): Promise<void> {
  */
 export function getRedis(): Redis & { duplicate: never } {
   if (!redis) {
-    throw new Error('Redis not initialized');
+    throw new Error("Redis not initialized");
   }
   // @ts-expect-error We don't want anyone to call `duplicate on the redis global instance
   // This is because we want to gracefully `quit` and duplicated Redis instances will
@@ -53,7 +78,7 @@ export function getRedis(): Redis & { duplicate: never } {
  */
 export function getRedisSubscriber(): Redis & { quit: never } {
   if (!redis) {
-    throw new Error('Redis not initialized');
+    throw new Error("Redis not initialized");
   }
   if (!redisSubscribers) {
     redisSubscribers = new Set();
@@ -62,7 +87,7 @@ export function getRedisSubscriber(): Redis & { quit: never } {
   const subscriber = redis.duplicate();
   redisSubscribers.add(subscriber);
 
-  subscriber.on('end', () => {
+  subscriber.on("end", () => {
     redisSubscribers?.delete(subscriber);
   });
 

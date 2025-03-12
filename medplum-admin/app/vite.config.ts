@@ -28,12 +28,5 @@ export default defineConfig({
   publicDir: 'static',
   build: {
     sourcemap: true,
-  },
-  resolve: {
-    alias: {
-      '@medplum/core': path.resolve(__dirname, '../core/src'),
-      '@medplum/react': path.resolve(__dirname, '../react/src'),
-      '@medplum/react-hooks': path.resolve(__dirname, '../react-hooks/src'),
-    },
-  },
+  }
 });
