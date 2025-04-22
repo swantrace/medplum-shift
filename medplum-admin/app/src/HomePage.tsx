@@ -1,13 +1,23 @@
-import { Paper } from '@mantine/core';
-import { showNotification } from '@mantine/notifications';
-import { formatSearchQuery, normalizeErrorString, parseSearchRequest, SearchRequest } from '@medplum/core';
-import { ResourceType } from '@medplum/fhirtypes';
-import { Loading, SearchControl, useMedplum } from '@medplum/react';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
-import classes from './HomePage.module.css';
-import { addSearchValues, getTransactionBundle, RESOURCE_TYPE_CREATION_PATHS, saveLastSearch } from './HomePage.utils';
-import { exportJsonFile } from './utils';
+import { Paper } from "@mantine/core";
+import { showNotification } from "@mantine/notifications";
+import {
+  formatSearchQuery,
+  normalizeErrorString,
+  parseSearchRequest,
+  SearchRequest,
+} from "@medplum/core";
+import { ResourceType } from "@medplum/fhirtypes";
+import { Loading, SearchControl, useMedplum } from "@medplum/react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import classes from "./HomePage.module.css";
+import {
+  addSearchValues,
+  getTransactionBundle,
+  RESOURCE_TYPE_CREATION_PATHS,
+  saveLastSearch,
+} from "./HomePage.utils";
+import { exportJsonFile } from "./utils";
 
 export function HomePage(): JSX.Element {
   const medplum = useMedplum();
@@ -17,10 +27,15 @@ export function HomePage(): JSX.Element {
 
   useEffect(() => {
     // Parse the search from the URL
-    const parsedSearch = parseSearchRequest(location.pathname + location.search);
+    const parsedSearch = parseSearchRequest(
+      location.pathname + location.search
+    );
 
     // Fill in the search with default values
-    const populatedSearch = addSearchValues(parsedSearch, medplum.getUserConfiguration());
+    const populatedSearch = addSearchValues(
+      parsedSearch,
+      medplum.getUserConfiguration()
+    );
 
     if (
       location.pathname === `/${populatedSearch.resourceType}` &&
@@ -31,7 +46,9 @@ export function HomePage(): JSX.Element {
       setSearch(populatedSearch);
     } else {
       // Otherwise, navigate to the desired URL
-      navigate(`/${populatedSearch.resourceType}${formatSearchQuery(populatedSearch)}`)?.catch(console.error);
+      navigate(
+        `/${populatedSearch.resourceType}${formatSearchQuery(populatedSearch)}`
+      )?.catch(console.error);
     }
   }, [medplum, navigate, location]);
 
@@ -41,53 +58,89 @@ export function HomePage(): JSX.Element {
 
   return (
     <Paper shadow="xs" m="md" p="xs" className={classes.paper}>
+      <h1>Hello World</h1>
       <SearchControl
         checkboxesEnabled={true}
         search={search}
-        onClick={(e) => navigate(`/${e.resource.resourceType}/${e.resource.id}`)?.catch(console.error)}
-        onAuxClick={(e) => window.open(`/${e.resource.resourceType}/${e.resource.id}`, '_blank')}
+        onClick={(e) =>
+          navigate(`/${e.resource.resourceType}/${e.resource.id}`)?.catch(
+            console.error
+          )
+        }
+        onAuxClick={(e) =>
+          window.open(`/${e.resource.resourceType}/${e.resource.id}`, "_blank")
+        }
         onChange={(e) => {
-          navigate(`/${search.resourceType}${formatSearchQuery(e.definition)}`)?.catch(console.error);
+          navigate(
+            `/${search.resourceType}${formatSearchQuery(e.definition)}`
+          )?.catch(console.error);
         }}
         onNew={() => {
-          navigate(RESOURCE_TYPE_CREATION_PATHS[search.resourceType] ?? `/${search.resourceType}/new`)?.catch(
-            console.error
-          );
+          navigate(
+            RESOURCE_TYPE_CREATION_PATHS[search.resourceType] ??
+              `/${search.resourceType}/new`
+          )?.catch(console.error);
         }}
         onExportCsv={() => {
-          const url = medplum.fhirUrl(search.resourceType, '$csv') + formatSearchQuery(search);
+          const url =
+            medplum.fhirUrl(search.resourceType, "$csv") +
+            formatSearchQuery(search);
           medplum
             .download(url)
             .then((blob: Blob) => {
-              window.open(window.URL.createObjectURL(blob), '_blank');
+              window.open(window.URL.createObjectURL(blob), "_blank");
             })
-            .catch((err) => showNotification({ color: 'red', message: normalizeErrorString(err), autoClose: false }));
+            .catch((err) =>
+              showNotification({
+                color: "red",
+                message: normalizeErrorString(err),
+                autoClose: false,
+              })
+            );
         }}
         onExportTransactionBundle={async () => {
           getTransactionBundle(search, medplum)
-            .then((bundle) => exportJsonFile(JSON.stringify(bundle, undefined, 2)))
-            .catch((err) => showNotification({ color: 'red', message: normalizeErrorString(err), autoClose: false }));
+            .then((bundle) =>
+              exportJsonFile(JSON.stringify(bundle, undefined, 2))
+            )
+            .catch((err) =>
+              showNotification({
+                color: "red",
+                message: normalizeErrorString(err),
+                autoClose: false,
+              })
+            );
         }}
         onDelete={(ids: string[]) => {
-          if (window.confirm('Are you sure you want to delete these resources?')) {
+          if (
+            window.confirm("Are you sure you want to delete these resources?")
+          ) {
             medplum.invalidateSearches(search.resourceType as ResourceType);
             medplum
               .executeBatch({
-                resourceType: 'Bundle',
-                type: 'batch',
+                resourceType: "Bundle",
+                type: "batch",
                 entry: ids.map((id) => ({
                   request: {
-                    method: 'DELETE',
+                    method: "DELETE",
                     url: `${search.resourceType}/${id}`,
                   },
                 })),
               })
               .then(() => setSearch({ ...search }))
-              .catch((err) => showNotification({ color: 'red', message: normalizeErrorString(err), autoClose: false }));
+              .catch((err) =>
+                showNotification({
+                  color: "red",
+                  message: normalizeErrorString(err),
+                  autoClose: false,
+                })
+              );
           }
         }}
         onBulk={(ids: string[]) => {
-          navigate(`/bulk/${search.resourceType}?ids=${ids.join(',')}`)?.catch(console.error);
+          navigate(`/bulk/${search.resourceType}?ids=${ids.join(",")}`)?.catch(
+            console.error
+          );
         }}
       />
     </Paper>

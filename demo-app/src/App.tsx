@@ -1,15 +1,14 @@
 import { AppShell, ErrorBoundary, Loading, Logo, useMedplum, useMedplumProfile } from '@medplum/react';
-import { IconUser } from '@tabler/icons-react';
+import { IconStar, IconList, IconWebhook, IconPackage } from '@tabler/icons-react';
 import { Suspense } from 'react';
-import { Route, Routes } from 'react-router';
-import { PatientHistory } from './components/PatientHistory';
-import { PatientOverview } from './components/PatientOverview';
-import { Timeline } from './components/Timeline';
+import { Route, Routes, Navigate } from 'react-router';
 import { HomePage } from './pages/HomePage';
 import { LandingPage } from './pages/LandingPage';
-import { PatientPage } from './pages/PatientPage';
-import { ResourcePage } from './pages/ResourcePage';
 import { SignInPage } from './pages/SignInPage';
+import { SubscriptionsListPage } from './pages/SubscriptionsListPage';
+import { ValueSetSelectorPage } from './pages/ValueSetSelectorPage';
+import { BatchOperationsPage } from './pages/BatchOperationsPage';
+import { SearchPage } from './pages/SearchPage'; // New search page for /Patient
 
 export function App(): JSX.Element | null {
   const medplum = useMedplum();
@@ -24,24 +23,36 @@ export function App(): JSX.Element | null {
       logo={<Logo size={24} />}
       menus={[
         {
-          title: 'My Links',
-          links: [{ icon: <IconUser />, label: 'Patients', href: '/' }],
+          title: 'Charts',
+          links: [
+            {
+              icon: <IconStar />,
+              label: 'Patients',
+              href: '/Patient',
+            },
+          ],
+        },
+        {
+          title: 'Admin',
+          links: [
+            { icon: <IconList />, label: 'ValueSet Selector', href: '/valueset-selector' },
+            { icon: <IconWebhook />, label: 'Subscriptions', href: '/subscriptions' },
+            { icon: <IconPackage />, label: 'Batch', href: '/batch' },
+          ],
         },
       ]}
     >
       <ErrorBoundary>
         <Suspense fallback={<Loading />}>
           <Routes>
-            <Route path="/" element={profile ? <HomePage /> : <LandingPage />} />
+            <Route path="/" element={profile ? <SearchPage /> : <LandingPage />} />
             <Route path="/signin" element={<SignInPage />} />
-            <Route path="/Patient/:id" element={<PatientPage />}>
-              <Route index element={<PatientOverview />} />
-              <Route path="overview" element={<PatientOverview />} />
-              <Route path="timeline" element={<Timeline />} />
-              <Route path="history" element={<PatientHistory />} />
-            </Route>
-            <Route path="/:resourceType/:id" element={<ResourcePage />} />
-            <Route path="/:resourceType/:id/_history/:versionId" element={<ResourcePage />} />
+            <Route path="/subscriptions" element={<SubscriptionsListPage />} />
+            <Route path="/valueset-selector" element={<ValueSetSelectorPage />} />
+            <Route path="/batch" element={<BatchOperationsPage />} />
+            <Route path="/Patient" element={<SearchPage />} />
+            <Route path="/Patient*" element={<SearchPage />} />
+            {/* Add other resource search routes as needed */}
           </Routes>
         </Suspense>
       </ErrorBoundary>
