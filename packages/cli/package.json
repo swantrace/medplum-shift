@@ -1,0 +1,73 @@
+{
+  "name": "@medplum/cli",
+  "version": "4.1.7",
+  "description": "Medplum Command Line Interface",
+  "keywords": [
+    "medplum",
+    "fhir",
+    "healthcare",
+    "interoperability",
+    "json",
+    "serialization",
+    "hl7",
+    "standards",
+    "clinical",
+    "dstu2",
+    "stu3",
+    "r4",
+    "normative"
+  ],
+  "homepage": "https://www.medplum.com/",
+  "bugs": {
+    "url": "https://github.com/medplum/medplum/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/medplum/medplum.git",
+    "directory": "packages/cli"
+  },
+  "license": "Apache-2.0",
+  "author": "Medplum <hello@medplum.com>",
+  "bin": {
+    "medplum": "./dist/cjs/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc && node esbuild.mjs",
+    "clean": "rimraf dist",
+    "lint": "eslint .",
+    "medplum": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-acm": "3.826.0",
+    "@aws-sdk/client-cloudformation": "3.826.0",
+    "@aws-sdk/client-cloudfront": "3.826.0",
+    "@aws-sdk/client-ecs": "3.826.0",
+    "@aws-sdk/client-s3": "3.826.0",
+    "@aws-sdk/client-ssm": "3.826.0",
+    "@aws-sdk/client-sts": "3.826.0",
+    "@aws-sdk/types": "3.821.0",
+    "@medplum/core": "4.1.7",
+    "@medplum/hl7": "4.1.7",
+    "aws-sdk-client-mock": "4.1.0",
+    "commander": "12.1.0",
+    "dotenv": "16.5.0",
+    "fast-glob": "3.3.3",
+    "iconv-lite": "0.6.3",
+    "node-fetch": "2.7.0",
+    "semver": "7.7.2",
+    "tar": "7.4.3"
+  },
+  "devDependencies": {
+    "@medplum/fhirtypes": "4.1.7",
+    "@medplum/mock": "4.1.7",
+    "@types/node-fetch": "2.6.12",
+    "@types/semver": "7.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
