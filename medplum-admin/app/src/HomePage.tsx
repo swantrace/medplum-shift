@@ -58,7 +58,6 @@ export function HomePage(): JSX.Element {
 
   return (
     <Paper shadow="xs" m="md" p="xs" className={classes.paper}>
-      <h1>Hello World</h1>
       <SearchControl
         checkboxesEnabled={true}
         search={search}

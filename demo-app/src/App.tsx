@@ -9,6 +9,8 @@ import { SubscriptionsListPage } from './pages/SubscriptionsListPage';
 import { ValueSetSelectorPage } from './pages/ValueSetSelectorPage';
 import { BatchOperationsPage } from './pages/BatchOperationsPage';
 import { SearchPage } from './pages/SearchPage'; // New search page for /Patient
+import { PatientPage } from './pages/PatientPage';
+import { ResourcePage } from './pages/ResourcePage';
 
 export function App(): JSX.Element | null {
   const medplum = useMedplum();
@@ -51,7 +53,9 @@ export function App(): JSX.Element | null {
             <Route path="/valueset-selector" element={<ValueSetSelectorPage />} />
             <Route path="/batch" element={<BatchOperationsPage />} />
             <Route path="/Patient" element={<SearchPage />} />
-            <Route path="/Patient*" element={<SearchPage />} />
+            <Route path="/Patient/:id" element={<PatientPage />} />
+            <Route path="/:resourceType/:id" element={<ResourcePage />} />
+            <Route path="/:resourceType" element={<SearchPage />} />
             {/* Add other resource search routes as needed */}
           </Routes>
         </Suspense>

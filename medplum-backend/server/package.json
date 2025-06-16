@@ -16,7 +16,7 @@
   "scripts": {
     "build": "npm run clean && tsc && tsc --project tsconfig.build.json",
     "clean": "rimraf dist",
-    "dev": "ts-node-dev --poll --respawn --transpile-only --require ./src/otel/instrumentation.ts src/index.ts",
+    "dev": "ts-node-dev --inspect --poll --respawn --transpile-only --require ./src/otel/instrumentation.ts src/index.ts",
     "lint": "eslint .",
     "migrate": "ts-node --transpileOnly src/migrations/migrate.ts",
     "circular": "npx madge --circular dist/index.js",

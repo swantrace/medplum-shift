@@ -1,0 +1,47 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to Medplum Backend",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/medplum-backend/server/dist/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/medplum-backend/server/src/**/*.ts",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "preLaunchTask": "Start Medplum Backend"
+    },
+    {
+      "name": "Debug Medplum Admin App",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/medplum-admin/app",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/src/*"
+      },
+      "preLaunchTask": "Start Medplum Admin App"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Both Backend and Frontend",
+      "configurations": [
+        "Attach to Medplum Backend",
+        "Debug Medplum Admin App"
+      ]
+    }
+  ]
+}
