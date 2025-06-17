@@ -70,7 +70,16 @@ type DefaultConfigKeys =
   | 'defaultAuthRateLimit'
   | 'defaultFhirQuota';
 
-const integerKeys = ['port', 'accurateCountThreshold', 'defaultRateLimit', 'defaultAuthRateLimit', 'defaultFhirQuota'];
+const integerKeys = [
+  'port',
+  'accurateCountThreshold',
+  'defaultRateLimit',
+  'defaultAuthRateLimit',
+  'defaultFhirQuota',
+  'family',
+  'connectTimeout',
+  'maxRetriesPerRequest',
+];
 
 export function isIntegerConfig(key: string): boolean {
   return integerKeys.includes(key);
