@@ -4,18 +4,24 @@ set -e
 # Default application names
 SERVER_APP_NAME="medplum-backend"
 APP_NAME="medplum-admin"
+POSTGRES_APP_NAME="medplum-postgres"
+REDIS_APP_NAME="medplum-redis"
 
 # Parse command line arguments
-while getopts "n:a:" opt; do
+while getopts "n:a:p:r:" opt; do
   case $opt in
     n) SERVER_APP_NAME="$OPTARG" ;;
     a) APP_NAME="$OPTARG" ;;
+    p) POSTGRES_APP_NAME="$OPTARG" ;;
+    r) REDIS_APP_NAME="$OPTARG" ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 1 ;;
   esac
 done
 
 echo "Using server app name: $SERVER_APP_NAME"
 echo "Using client app name: $APP_NAME"
+echo "Using postgres app name: $POSTGRES_APP_NAME"
+echo "Using redis app name: $REDIS_APP_NAME"
 
 # Navigate to the repository root
 REPO_ROOT=$(git rev-parse --show-toplevel)
@@ -56,8 +62,6 @@ primary_region = 'iad'
   MEDPLUM_SUPPORT_EMAIL = "\"Medplum\" <support@medplum.com>"
   MEDPLUM_GOOGLE_CLIENT_ID = "397236612778-c0b5tnjv98frbo1tfuuha5vkme3cmq4s.apps.googleusercontent.com"
   MEDPLUM_GOOGLE_CLIENT_SECRET = ""
-  MEDPLUM_RECAPTCHA_SITE_KEY = "6LfHdsYdAAAAAC0uLnnRrDrhcXnziiUwKd8VtLNq"
-  MEDPLUM_RECAPTCHA_SECRET_KEY = "6LfHdsYdAAAAAH9dN154jbJ3zpQife3xaiTvPChL"
   MEDPLUM_ADMIN_CLIENT_ID = "2a4b77f2-4d4e-43c6-9b01-330eb5ca772f"
   MEDPLUM_MAX_JSON_SIZE = "1mb"
   MEDPLUM_MAX_BATCH_SIZE = "50mb"
@@ -67,17 +71,17 @@ primary_region = 'iad'
   MEDPLUM_DEFAULT_BOT_RUNTIME_VERSION = "vmcontext"
   MEDPLUM_ALLOWED_ORIGINS = "*"
   MEDPLUM_INTROSPECTION_ENABLED = "true"
-  MEDPLUM_DATABASE_HOST = "medplum-postgres-2.internal"
+  MEDPLUM_DATABASE_HOST = "${POSTGRES_APP_NAME}.internal"
   MEDPLUM_DATABASE_PORT = "5432"
   MEDPLUM_DATABASE_DBNAME = "medplum"
   MEDPLUM_DATABASE_USERNAME = "medplum"
   MEDPLUM_DATABASE_PASSWORD = "medplum"
-  MEDPLUM_REDIS_FAMILY = 6
-  MEDPLUM_REDIS_HOST = "medplum-redis-2.internal"
+  MEDPLUM_REDIS_FAMILY = "6"
+  MEDPLUM_REDIS_HOST = "${REDIS_APP_NAME}.internal"
   MEDPLUM_REDIS_PORT = "6379"
   MEDPLUM_REDIS_PASSWORD = "medplum"
-  MEDPLUM_REDIS_MAX_RETRIES_PER_REQUEST = 5
-  MEDPLUM_REDIS_CONNECT_TIMEOUT = 5000
+  MEDPLUM_REDIS_MAX_RETRIES_PER_REQUEST = "5"
+  MEDPLUM_REDIS_CONNECT_TIMEOUT = "5000"
   MEDPLUM_BULLMQ_REMOVE_ON_FAIL = "{\"count\": 1}"
   MEDPLUM_BULLMQ_REMOVE_ON_COMPLETE = "{\"count\": 1}"
   MEDPLUM_SHUTDOWN_TIMEOUT_MILLISECONDS = "30000"

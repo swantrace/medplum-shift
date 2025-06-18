@@ -2,7 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,5 +22,7 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "exclude": ["dist"]
+  "exclude": [
+    "dist"
+  ]
 }

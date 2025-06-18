@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "npm run clean && tsc && vite build",
     "clean": "rimraf dist",
     "dev": "vite",
     "lint": "eslint src/",

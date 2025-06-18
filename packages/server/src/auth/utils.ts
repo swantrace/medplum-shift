@@ -252,10 +252,10 @@ export function validateRecaptcha(projectValidation?: (p: Project) => OperationO
         return;
       }
 
-      if (!(await verifyRecaptcha(secretKey, req.body.recaptchaToken))) {
-        sendOutcome(res, badRequest('Recaptcha failed'));
-        return;
-      }
+      // if (!(await verifyRecaptcha(secretKey, req.body.recaptchaToken))) {
+      //   sendOutcome(res, badRequest('Recaptcha failed'));
+      //   return;
+      // }
     }
     next();
   };

@@ -4,24 +4,20 @@ import {
   Group,
   Loader,
   Paper,
-  Stack,
   Text,
   Title,
   Stepper,
-  Badge,
   Alert,
   SimpleGrid,
   Progress,
   useMantineTheme,
   Box,
   Timeline,
-  ThemeIcon,
 } from '@mantine/core';
 import { type MedplumClient } from '@medplum/core';
-import { Bundle, Patient } from '@medplum/fhirtypes';
+import { Bundle } from '@medplum/fhirtypes';
 import { useMedplumContext } from '@medplum/react';
 import { JSX, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
 import {
   IconInfoCircle,
   IconServer,
@@ -31,9 +27,17 @@ import {
   IconCheck,
   IconAlertCircle,
 } from '@tabler/icons-react';
+import {
+  MEDPLUM_TOKEN_URL,
+  MEDPLUM_FHIR_URL,
+  SLS_SERVICE_URL,
+  CDS_SERVICE_URL,
+  TARGET_CLIENT_ID,
+  TARGET_CLIENT_SECRET,
+  EHR_TO_EHR_SCOPE,
+} from '../config';
 
-export function PatientPage(): JSX.Element {
-  const navigate = useNavigate();
+export function SmartEhr2EhrAppPage(): JSX.Element {
   const theme = useMantineTheme();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -43,13 +47,13 @@ export function PatientPage(): JSX.Element {
   const [loadingBundle, setLoadingBundle] = useState<boolean>(false);
   const [bundleError, setBundleError] = useState<string | null>(null);
   const [contextPatientId, setContextPatientId] = useState<string | null>(null);
-  const [slsResult, setSlsResult] = useState<any | null>(null);
+  const [slsResult, setSlsResult] = useState<any>(null);
   const [loadingSls, setLoadingSls] = useState<boolean>(false);
   const [slsError, setSlsError] = useState<string | null>(null);
-  const [cdsResult, setCdsResult] = useState<any | null>(null);
+  const [cdsResult, setCdsResult] = useState<any>(null);
   const [loadingCds, setLoadingCds] = useState<boolean>(false);
   const [cdsError, setCdsError] = useState<string | null>(null);
-  const [transactionResult, setTransactionResult] = useState<any | null>(null);
+  const [transactionResult, setTransactionResult] = useState<any>(null);
   const [loadingTransaction, setLoadingTransaction] = useState<boolean>(false);
   const [transactionError, setTransactionError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0);
@@ -63,19 +67,19 @@ export function PatientPage(): JSX.Element {
   const medplum = medplumContext.medplum as MedplumClient;
 
   useEffect(() => {
-    const fetchToken = async () => {
+    const fetchToken = async (): Promise<void> => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('http://localhost:8103/oauth2/token', {
+        const response = await fetch(MEDPLUM_TOKEN_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({
             grant_type: 'client_credentials',
-            client_id: '019753b0-2a7c-73ec-b08a-5a1bfb426b2c',
-            client_secret: '5ee40bfd4d3b28c53e6aacafa3461544b50d1d787cbadb69bd38f6cab7445f7c',
-            scope: 'user/*.cruds', // Broader scope to allow all resource operations
+            client_id: TARGET_CLIENT_ID,
+            client_secret: TARGET_CLIENT_SECRET,
+            scope: EHR_TO_EHR_SCOPE,
           }),
         });
 
@@ -95,7 +99,10 @@ export function PatientPage(): JSX.Element {
       }
     };
 
-    fetchToken();
+    fetchToken().catch((err) => {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during token fetch');
+      console.error('Error in fetchToken:', err);
+    });
 
     // Try to get patient ID from SMART on FHIR context
     const smartPatientId = sessionStorage.getItem('smart_patient');
@@ -105,7 +112,7 @@ export function PatientPage(): JSX.Element {
     }
   }, []);
 
-  const getContextPatientEverything = async () => {
+  const getContextPatientEverything = async (): Promise<void> => {
     if (!contextPatientId) {
       setBundleError('No context patient ID found in session storage.');
       return;
@@ -128,7 +135,12 @@ export function PatientPage(): JSX.Element {
       if (filteredBundle.entry && Array.isArray(filteredBundle.entry)) {
         filteredBundle.entry = filteredBundle.entry.filter((entry: any) => {
           const resource = entry.resource;
-          return resource && resource.resourceType !== 'AuditEvent' && resource.resourceType !== 'Practitioner' && resource.resourceType !== 'Consent';
+          return (
+            resource &&
+            resource.resourceType !== 'AuditEvent' &&
+            resource.resourceType !== 'Practitioner' &&
+            resource.resourceType !== 'Consent'
+          );
         });
       }
 
@@ -148,7 +160,7 @@ export function PatientPage(): JSX.Element {
     }
   };
 
-  const sendToSlsLabel = async () => {
+  const sendToSlsLabel = async (): Promise<void> => {
     if (!contextPatientBundle) {
       setSlsError('No context patient bundle available. Please get the context patient data first.');
       return;
@@ -158,7 +170,7 @@ export function PatientPage(): JSX.Element {
       setLoadingSls(true);
       setSlsError(null);
 
-      const response = await fetch('http://localhost:3002/fhir/sls/label', {
+      const response = await fetch(SLS_SERVICE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,7 +194,7 @@ export function PatientPage(): JSX.Element {
     }
   };
 
-  const sendToCdsService = async () => {
+  const sendToCdsService = async (): Promise<void> => {
     if (!slsResult) {
       setCdsError('No SLS result available. Please send the bundle to SLS label endpoint first.');
       return;
@@ -224,7 +236,7 @@ export function PatientPage(): JSX.Element {
 
       console.log('Sending to CDS service:', cdsRequest);
 
-      const response = await fetch('http://localhost:8080/cds-services/patient-consent-consult', {
+      const response = await fetch(CDS_SERVICE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +265,7 @@ export function PatientPage(): JSX.Element {
     }
   };
 
-  const createResourcesFromCdsResult = async () => {
+  const createResourcesFromCdsResult = async (): Promise<void> => {
     if (!cdsResult || !token) {
       setTransactionError('No CDS result available or missing token. Please complete previous steps first.');
       return;
@@ -300,7 +312,7 @@ export function PatientPage(): JSX.Element {
       console.log('Transaction bundle:', transactionBundle);
 
       // Send transaction bundle to FHIR server
-      const response = await fetch('http://localhost:8103/fhir/R4', {
+      const response = await fetch(MEDPLUM_FHIR_URL, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -332,7 +344,7 @@ export function PatientPage(): JSX.Element {
   };
 
   // Helper function to get resource type counts from a bundle
-  const getResourceTypeCounts = (bundle: any) => {
+  const getResourceTypeCounts = (bundle: any): { [key: string]: number } => {
     if (!bundle?.entry || !Array.isArray(bundle.entry)) {
       return {};
     }
@@ -341,23 +353,17 @@ export function PatientPage(): JSX.Element {
     bundle.entry.forEach((entry: any) => {
       const resourceType = entry.resource?.resourceType;
       // Only count resources that are not AuditEvent, Practitioner or Consent
-      if (resourceType && resourceType !== 'AuditEvent' && resourceType !== 'Practitioner' && resourceType !== "Consent") {
+      if (
+        resourceType &&
+        resourceType !== 'AuditEvent' &&
+        resourceType !== 'Practitioner' &&
+        resourceType !== 'Consent'
+      ) {
         counts[resourceType] = (counts[resourceType] || 0) + 1;
       }
     });
 
     return counts;
-  };
-
-  // Formats resource counts for display
-  const formatResourceCounts = (counts: { [key: string]: number }) => {
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // Sort by count descending
-      .map(([type, count]) => (
-        <Badge key={type} size="md" radius="sm" color="blue" mr={5} mb={5}>
-          {type}: {count}
-        </Badge>
-      ));
   };
 
   return (

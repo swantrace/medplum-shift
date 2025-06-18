@@ -25,7 +25,6 @@ cd "$REPO_ROOT"
 cd packages/app
 cat > .env.production << EOL
 MEDPLUM_BASE_URL=https://${SERVER_APP_NAME}.fly.dev/
-RECAPTCHA_SITE_KEY=6LfHdsYdAAAAAC0uLnnRrDrhcXnziiUwKd8VtLNq
 MEDPLUM_REGISTER_ENABLED=true
 EOL
 
@@ -107,11 +106,6 @@ primary_region = 'iad'
   auto_start_machines = true
   min_machines_running = 1
   processes = ['app']
-
-[env]
-  MEDPLUM_BASE_URL = "https://${SERVER_APP_NAME}.fly.dev/"
-  RECAPTCHA_SITE_KEY = "6LfHdsYdAAAAAC0uLnnRrDrhcXnziiUwKd8VtLNq"
-  MEDPLUM_REGISTER_ENABLED = "true"
 
 [[vm]]
   memory = '2gb'

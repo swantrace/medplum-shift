@@ -1,12 +1,16 @@
 import { Text, Title } from '@mantine/core';
 import { createReference, getReferenceString } from '@medplum/core';
 import { Encounter, Patient, Reference, ResourceType } from '@medplum/fhirtypes';
-import { Document, Loading, MedplumLink, SmartAppLaunchLink, useResource, useSearchResources } from '@medplum/react';
-import { JSX } from 'react';
+import { Document, Loading, MedplumLink, useResource, useSearchResources } from '@medplum/react';
+import { type JSX } from 'react';
 import { useParams } from 'react-router';
+import { SmartAppLaunchLink } from '../components/SmartAppLaunchLink';
 
 export function AppsPage(): JSX.Element | null {
-  const { resourceType, id } = useParams() as { resourceType: ResourceType; id: string };
+  const { resourceType, id } = useParams() as {
+    resourceType: ResourceType;
+    id: string;
+  };
   const resource = useResource({ reference: resourceType + '/' + id });
   const [questionnaires, questionnairesLoading] = useSearchResources('Questionnaire', 'subject-type=' + resourceType);
   const [clientApps, clientAppsLoading] = useSearchResources('ClientApplication', { _count: 1000 });
@@ -37,6 +41,9 @@ export function AppsPage(): JSX.Element | null {
     patient = resource.subject as Reference<Patient>;
     encounter = createReference(resource);
   }
+
+  console.log('patient', patient);
+  console.log('smartApps[0]', smartApps?.[0]);
 
   return (
     <Document>

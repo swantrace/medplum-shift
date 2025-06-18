@@ -1,5 +1,6 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
+import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import { MedplumClient } from '@medplum/core';
@@ -69,7 +70,9 @@ export async function initApp(): Promise<void> {
       <MedplumProvider medplum={medplum} navigate={navigate}>
         <MantineProvider theme={theme}>
           <Notifications position="bottom-right" />
-          <RouterProvider router={router} />
+          <ModalsProvider>
+            <RouterProvider router={router} />
+          </ModalsProvider>
         </MantineProvider>
       </MedplumProvider>
     </StrictMode>

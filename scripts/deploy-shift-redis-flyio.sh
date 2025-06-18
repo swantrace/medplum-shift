@@ -1,19 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Display usage information
-function show_usage() {
-  echo "Usage: $0 [app_name]"
-  echo "  app_name: Custom Fly.io app name (optional, defaults to medplum-redis)"
-  echo ""
-  exit 1
-}
-
-# Show help if requested
-if [[ "$#" -gt 0 && ("$1" == "-h" || "$1" == "--help") ]]; then
-  show_usage
-fi
-
 # Constants
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 REDIS_DIR=$(cd "$SCRIPT_DIR/../redis" && pwd)
