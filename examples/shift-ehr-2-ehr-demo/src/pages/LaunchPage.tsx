@@ -1,6 +1,4 @@
-import { Container, Loader, Text } from '@mantine/core';
-import { MedplumClient } from '@medplum/core';
-import { useMedplumContext } from '@medplum/react';
+import { Button, Container, Loader, Text } from '@mantine/core';
 import { JSX, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { FHIR_SCOPE, MEDPLUM_CLIENT_ID, SMART_HEALTH_IT_CLIENT_ID } from '../config';
@@ -47,7 +45,7 @@ async function fetchSmartConfiguration(iss: string): Promise<SmartConfiguration>
   return response.json();
 }
 
-async function initiateEhrLaunch(params: URLSearchParams): Promise<never> {
+async function initiateEhrLaunch(params: URLSearchParams): Promise<void> {
   const iss = params.get('iss');
   const launch = params.get('launch');
 
@@ -80,8 +78,8 @@ async function initiateEhrLaunch(params: URLSearchParams): Promise<never> {
 
   const url = new URL(config.authorization_endpoint);
   url.search = authParams.toString();
+
   window.location.href = url.toString();
-  return new Promise(() => {}); // This promise never resolves due to redirect
 }
 
 function validateAuthResponse(params: URLSearchParams): void {
@@ -132,22 +130,37 @@ async function exchangeCodeForToken(
   return tokenResponse.json();
 }
 
-function setupMedplumClient(tokenData: TokenResponse, iss: string, medplumContext: { medplum: MedplumClient }): void {
-  // Store the access token and other relevant data
-  sessionStorage.setItem('smart_patient', tokenData.patient);
+function setupMedplumClient(tokenData: TokenResponse): void {
+  // Check if client has already been set up
+  if (sessionStorage.getItem('smart_client_setup') === 'true') {
+    return;
+  }
 
-  // Configure the Medplum client
-  medplumContext.medplum = new MedplumClient({
-    baseUrl: iss,
-    fhirUrlPath: '',
-    accessToken: tokenData.access_token,
-  });
+  // Store the access token and other relevant data in sessionStorage
+  sessionStorage.setItem('smart_patient', tokenData.patient);
+  sessionStorage.setItem('smart_access_token', tokenData.access_token);
+  sessionStorage.setItem('smart_client_setup', 'true');
 }
 
 export function LaunchPage(): JSX.Element {
   const navigate = useNavigate();
   const [error, setError] = useState<string>();
-  const medplumContext = useMedplumContext();
+
+  // Function to reset the client setup state
+  const resetClientSetup = (): void => {
+    try {
+      // Clear our setup tracking flag and stored data
+      sessionStorage.removeItem('smart_client_setup');
+      sessionStorage.removeItem('smart_access_token');
+      sessionStorage.removeItem('smart_iss');
+      sessionStorage.removeItem('smart_patient');
+
+      window.location.reload();
+    } catch (err) {
+      console.error('Error during reset:', err);
+      window.location.reload();
+    }
+  };
 
   useEffect(() => {
     const handleSmartLaunch = async (): Promise<void> => {
@@ -174,9 +187,8 @@ export function LaunchPage(): JSX.Element {
 
         // Clean up session storage
         sessionStorage.removeItem('smart_state');
-        sessionStorage.removeItem('smart_iss');
 
-        setupMedplumClient(tokenData, iss, medplumContext);
+        setupMedplumClient(tokenData);
 
         // Redirect to patient page
         navigate('/patient')?.catch(console.error);
@@ -188,13 +200,27 @@ export function LaunchPage(): JSX.Element {
     handleSmartLaunch().catch((err) => {
       setError(err instanceof Error ? err.message : 'Unknown error');
     });
-  }, [navigate, medplumContext]);
+
+    // Return cleanup function to clear setup state when component unmounts
+    return () => {
+      // We don't clear the actual auth tokens here, just the setup tracking flag
+      // This allows the app to properly handle re-mounts without re-initializing
+      if (window.location.pathname !== '/patient') {
+        sessionStorage.removeItem('smart_client_setup');
+      }
+    };
+  }, [navigate]); // Remove medplumContext dependency
 
   if (error) {
     return (
       <Container>
         <Text ta="center" c="red" mt="xl">
           Error: {error}
+        </Text>
+        <Text ta="center" mt="md">
+          <Button onClick={resetClientSetup} variant="light" color="blue">
+            Retry
+          </Button>
         </Text>
       </Container>
     );

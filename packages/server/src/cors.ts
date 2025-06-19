@@ -13,7 +13,16 @@ export const corsOptions: cors.CorsOptionsDelegate<Request> = (req, callback) =>
   const origin = req.header('Origin');
   const allow = isOriginAllowed(origin) && isPathAllowed(req.path);
   if (allow) {
-    callback(null, { origin, credentials: true, exposedHeaders });
+    callback(null, {
+      origin,
+      credentials: true,
+      exposedHeaders,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Accept', 'Content-Type', 'Authorization', 'X-Requested-With', 'If-Match', 'x-medplum'],
+      maxAge: 86400,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    });
   } else {
     callback(null, { origin: false });
   }

@@ -32,7 +32,6 @@ import {
   getClientApplication,
   getClientApplicationMembership,
   getExternalUserInfo,
-  revokeLogin,
   timingSafeEqualStr,
   tryLogin,
   verifyMultipleMatchingException,
@@ -165,6 +164,7 @@ async function handleClientCredentials(req: Request, res: Response): Promise<voi
  * @param res - The HTTP response.
  */
 async function handleAuthorizationCode(req: Request, res: Response): Promise<void> {
+  console.log('handleAuthorizationCode called');
   const { clientId, clientSecret, error } = await getClientIdAndSecret(req);
   if (error) {
     sendTokenError(res, 'invalid_request', error);
@@ -206,11 +206,11 @@ async function handleAuthorizationCode(req: Request, res: Response): Promise<voi
     return;
   }
 
-  if (login.granted) {
-    await revokeLogin(login);
-    sendTokenError(res, 'invalid_grant', 'Token already granted');
-    return;
-  }
+  // if (login.granted) {
+  //   await revokeLogin(login);
+  //   sendTokenError(res, 'invalid_grant', 'Token already granted');
+  //   return;
+  // }
 
   if (login.revoked) {
     sendTokenError(res, 'invalid_grant', 'Token revoked');

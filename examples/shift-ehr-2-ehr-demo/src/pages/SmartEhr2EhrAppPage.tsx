@@ -14,9 +14,7 @@ import {
   Box,
   Timeline,
 } from '@mantine/core';
-import { type MedplumClient } from '@medplum/core';
 import { Bundle } from '@medplum/fhirtypes';
-import { useMedplumContext } from '@medplum/react';
 import { JSX, useEffect, useState } from 'react';
 import {
   IconInfoCircle,
@@ -36,9 +34,16 @@ import {
   TARGET_CLIENT_SECRET,
   EHR_TO_EHR_SCOPE,
 } from '../config';
+import { MedplumClient } from '@medplum/core';
 
 export function SmartEhr2EhrAppPage(): JSX.Element {
+  const smartIss = sessionStorage.getItem('smart_iss');
+  const smartAccessToken = sessionStorage.getItem('smart_access_token');
+  const smartPatientId = sessionStorage.getItem('smart_patient');
+
   const theme = useMantineTheme();
+  const [medplumClient, setMedplumClient] = useState<MedplumClient | null>(null);
+
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,16 +51,19 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
   const [contextPatientBundle, setContextPatientBundle] = useState<Bundle | null>(null);
   const [loadingBundle, setLoadingBundle] = useState<boolean>(false);
   const [bundleError, setBundleError] = useState<string | null>(null);
-  const [contextPatientId, setContextPatientId] = useState<string | null>(null);
+
   const [slsResult, setSlsResult] = useState<any>(null);
   const [loadingSls, setLoadingSls] = useState<boolean>(false);
   const [slsError, setSlsError] = useState<string | null>(null);
+
   const [cdsResult, setCdsResult] = useState<any>(null);
   const [loadingCds, setLoadingCds] = useState<boolean>(false);
   const [cdsError, setCdsError] = useState<string | null>(null);
+
   const [transactionResult, setTransactionResult] = useState<any>(null);
   const [loadingTransaction, setLoadingTransaction] = useState<boolean>(false);
   const [transactionError, setTransactionError] = useState<string | null>(null);
+
   const [activeStep, setActiveStep] = useState(0);
 
   // Stats for filtered resources
@@ -63,8 +71,20 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
   const [filteredResourceCount, setFilteredResourceCount] = useState(0);
   const [targetResourceCount, setTargetResourceCount] = useState(0);
 
-  const medplumContext = useMedplumContext();
-  const medplum = medplumContext.medplum as MedplumClient;
+  useEffect(() => {
+    if (!smartIss || !smartAccessToken) {
+      console.warn('No SMART context found in sessionStorage. Please launch from an EHR.');
+      return;
+    }
+
+    const client = new MedplumClient({
+      baseUrl: smartIss.replace('fhir/R4/', ''), // smartIss https://medplum-backend.fly.dev/fhir/R4/
+      fhirUrlPath: 'fhir/R4',
+      accessToken: smartAccessToken,
+    });
+
+    setMedplumClient(client);
+  }, [smartIss, smartAccessToken]);
 
   useEffect(() => {
     const fetchToken = async (): Promise<void> => {
@@ -89,11 +109,9 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
 
         const data = await response.json();
         setToken(data.access_token);
-        console.log('Access token:', data.access_token);
-        setActiveStep(1); // Move to next step automatically
+        setActiveStep(1);
       } catch (err: any) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        console.error('Error fetching token:', err);
       } finally {
         setLoading(false);
       }
@@ -103,23 +121,11 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
       setError(err instanceof Error ? err.message : 'An unknown error occurred during token fetch');
       console.error('Error in fetchToken:', err);
     });
-
-    // Try to get patient ID from SMART on FHIR context
-    const smartPatientId = sessionStorage.getItem('smart_patient');
-    if (smartPatientId) {
-      setContextPatientId(smartPatientId);
-      console.log('Found SMART patient ID in session storage:', smartPatientId);
-    }
   }, []);
 
   const getContextPatientEverything = async (): Promise<void> => {
-    if (!contextPatientId) {
-      setBundleError('No context patient ID found in session storage.');
-      return;
-    }
-
-    if (!medplum.getAccessToken()) {
-      setBundleError('No Medplum authentication token found');
+    if (!smartPatientId || !medplumClient) {
+      setBundleError('No context patient ID or Medplum client available. Please authenticate first.');
       return;
     }
 
@@ -127,8 +133,7 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
       setLoadingBundle(true);
       setBundleError(null);
 
-      const bundle = await medplum.readPatientEverything(contextPatientId);
-      console.log('Context patient everything bundle:', bundle);
+      const bundle = await medplumClient.readPatientEverything(smartPatientId);
 
       // Filter out AuditEvent, Practitioner and Consent resources before saving and sending to SLS
       const filteredBundle = { ...bundle };
@@ -144,6 +149,8 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
         });
       }
 
+      console.log('Filtered bundle:', filteredBundle);
+
       setContextPatientBundle(filteredBundle);
 
       // Update stats - count only the filtered resources
@@ -151,7 +158,7 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
         setSourceResourceCount(filteredBundle.entry.length);
       }
 
-      setActiveStep(2); // Move to next step
+      setActiveStep(2);
     } catch (err: any) {
       setBundleError(err instanceof Error ? err.message : 'An unknown error occurred');
       console.error('Error getting context patient everything:', err);
@@ -184,8 +191,9 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
 
       const result = await response.json();
       console.log('SLS label result:', result);
+
       setSlsResult(result);
-      setActiveStep(3); // Move to next step
+      setActiveStep(3);
     } catch (err: any) {
       setSlsError(err instanceof Error ? err.message : 'An unknown error occurred');
       console.error('Error sending to SLS label endpoint:', err);
@@ -256,7 +264,7 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
       const resourcesAfterFiltering = result.cards?.[0]?.extension?.content?.entry?.length || 0;
       setFilteredResourceCount(sourceResourceCount - resourcesAfterFiltering);
 
-      setActiveStep(4); // Move to next step
+      setActiveStep(4);
     } catch (err: any) {
       setCdsError(err instanceof Error ? err.message : 'An unknown error occurred');
       console.error('Error sending to CDS service:', err);
@@ -425,17 +433,17 @@ export function SmartEhr2EhrAppPage(): JSX.Element {
                 after privacy filtering.
               </Text>
 
-              {contextPatientId ? (
+              {smartPatientId ? (
                 <>
                   <Alert color="blue" title="SMART on FHIR Context" icon={<IconInfoCircle size="1rem" />} mb="md">
-                    <Text>Context Patient ID: {contextPatientId}</Text>
+                    <Text>Context Patient ID: {smartPatientId}</Text>
                   </Alert>
 
                   <Group justify="center" mt="md">
                     <Button
                       onClick={getContextPatientEverything}
                       loading={loadingBundle}
-                      disabled={!contextPatientId || !medplum.getAccessToken()}
+                      disabled={!smartPatientId || !smartAccessToken || !smartIss}
                       color="blue"
                       size="md"
                     >

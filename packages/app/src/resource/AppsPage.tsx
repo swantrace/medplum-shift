@@ -42,9 +42,6 @@ export function AppsPage(): JSX.Element | null {
     encounter = createReference(resource);
   }
 
-  console.log('patient', patient);
-  console.log('smartApps[0]', smartApps?.[0]);
-
   return (
     <Document>
       {questionnaires?.map((questionnaire) => (
