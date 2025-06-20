@@ -2,6 +2,12 @@
 
 This project provides a streamlined approach to demonstrating EHR interoperability using SMART applications for the SHIFT Task Force. It leverages [Medplum](https://github.com/medplum/medplum) as a FHIR data store and includes deployment scripts for quickly setting up the necessary infrastructure on Fly.io.
 
+## Demo Video
+
+Watch our demonstration video to see the SHIFT EHR-to-EHR demo in action:
+
+[download the demo video](https://github.com/SHIFT-Task-Force/medplum-shift-demo/raw/refs/heads/main/assets/videos/smart-ehr-2-ehr-demo.webm).
+
 ## Quick Start Guide for Testers
 
 The demo environment is already set up and ready for testing at [medplum-admin.fly.dev](https://medplum-admin.fly.dev).
@@ -26,7 +32,7 @@ The demo environment is already set up and ready for testing at [medplum-admin.f
 
 1. Navigate to the **Patient** tab in the left sidebar
 2. Select the test patient from the list
-3. In the patient view, switch to the **App** tab
+3. In the patient view, switch to the **Apps** tab
 4. Click on the **Transfer Data App** link to launch the SMART app
 5. Follow the on-screen instructions in the SMART app
 
