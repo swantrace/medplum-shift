@@ -1,291 +1,294 @@
-# [Medplum](https://www.medplum.com) &middot; [![GitHub license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/medplum/medplum/blob/main/LICENSE.txt) [![npm version](https://img.shields.io/npm/v/@medplum/core.svg?color=blue)](https://www.npmjs.com/package/@medplum/core) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=medplum_medplum&metric=alert_status&token=207c95a43e7519809d6d336d8cc7837d3e057acf)](https://sonarcloud.io/dashboard?id=medplum_medplum) [![Coverage Status](https://coveralls.io/repos/github/medplum/medplum/badge.svg?branch=main)](https://coveralls.io/github/medplum/medplum?branch=main)
+# SHIFT Task Force SMART EHR-to-EHR Demo
 
-![Medplum](packages/docs/static/img/cover.webp)
+This project provides a streamlined approach to demonstrating EHR interoperability using SMART applications for the SHIFT Task Force. It leverages [Medplum](https://github.com/medplum/medplum) as a FHIR data store and includes deployment scripts for quickly setting up the necessary infrastructure on Fly.io.
 
-Medplum is a developer platform that enables flexible and rapid development of healthcare apps.
+## Quick Start Guide for Testers
 
-- **Medplum Auth** - End-to-end identity solution for easy user authentication, sign-in, and permissions using OAuth, OpenID, and SMART-on-FHIR.
-- **Medplum Clinical Data Repository (CDR)** - Backend server that hosts your healthcare data in a secure, compliant, and standards-based repository.
-- **Medplum API** - FHIR-based API for sending, receiving, and manipulating data.
-- **Medplum SDK** - Client libraries that simplify the process of interacting with the **Medplum API**.
-- **Medplum App** - Web application where you can view your data and perform basic editing tasks. You can also use the Medplum App to manage basic workflows.
-- **Medplum Bots** - Write and run application logic server-side without needing to set up your own server.
-- **UI Component Library** - React components designed to help you quickly develop custom healthcare applications.
+The demo environment is already set up and ready for testing at [medplum-admin.fly.dev](https://medplum-admin.fly.dev).
 
-## Docs
+### Access the Demo
 
-- [Contributing](#contributing)
-  - [Ground Rules](#ground-rules)
-  - [Codebase](#codebase)
-    - [Technologies](#technologies)
-    - [Folder Structure](#folder-structure)
+1. Login to the Source EHR at [medplum-admin.fly.dev](https://medplum-admin.fly.dev) with:
 
-## Contributing
+   - **Username**: shift_ehr1@example.com
+   - **Password**: medplum_admin
 
-**We heartily welcome any and all contributions that match our engineering standards!**
+2. Set up easy account switching:
+   - Click on your username in the left corner
+   - Select "EHR1 SHIFT" in the dropdown menu
+   - Click "Add another account"
+   - Login with the Target EHR credentials:
+     - **Username**: shift_ehr2@example.com
+     - **Password**: medplum_admin
+   - Now you can easily switch between the two EHRs using the account dropdown
 
-That being said, this codebase isn't your typical open-source project because it's not a library or package with a
-limited scope -- it's our entire product. Our [Contributing documentation](https://medplum.com/docs/contributing) has
-all the information you need to get started.
+### Run the Demo
 
-### Ground Rules
+1. Navigate to the **Patient** tab in the left sidebar
+2. Select the test patient from the list
+3. In the patient view, switch to the **App** tab
+4. Click on the **Transfer Data App** link to launch the SMART app
+5. Follow the on-screen instructions in the SMART app
 
-#### Contributions and discussion guidelines
+### After Each Test
 
-By making a contribution to this project, you are deemed to have accepted the [Developer Certificate of Origin](https://developercertificate.org/) (DCO).
+To reset the environment for the next demo:
 
-All conversations and communities on Medplum are expected to follow GitHub's [Community Guidelines](https://help.github.com/en/github/site-policy/github-community-guidelines)
-and [Acceptable Use Policies](https://help.github.com/en/github/site-policy/github-acceptable-use-policies). We expect
-discussions on issues and pull requests to stay positive, productive, and respectful. Remember: there are real people on
-the other side of the screen!
+1. Switch to the Target EHR (shift_ehr2@example.com account)
+2. Navigate to each resource type that was transferred
+3. Select the transferred resources
+4. Click "Delete" to remove them from the target EHR
 
-#### Reporting a bug or proposing a new feature
+## For Developers: Deploying New Instances
 
-If you found a technical bug on Medplum or have ideas for features we should implement, the issue tracker is the best
-place to share with us. ([click here to open a new issue](https://github.com/medplum/medplum/issues/new))
-
-### Writing documentation or blog content
-
-Did you learn how to do something using Medplum that wasn't obvious on your first try? By contributing your new knowledge
-to our documentation, you can help others who might have a similar use case!
-
-Our documentation is hosted on [medplum.com/docs](https://www.medplum.com/docs), but it is built from [Markdown](https://www.markdownguide.org/)
-files in our [`docs` package](https://github.com/medplum/medplum/tree/main/packages/docs/docs).
-
-For relatively small changes, you can edit files directly from your web browser on [Github.dev](https://github.dev/medplum/medplum/blob/main/packages/docs/docs/home.md)
-without needing to clone the repository.
-
-#### Fixing a bug or implementing a new feature
-
-If you find a bug and open a Pull Request that fixes it, we'll review it as soon as possible to ensure it meets our engineering standards.
-
-If you want to implement a new feature, open an issue first to discuss with us how the feature might work, and to ensure
-it fits into our roadmap and plans for the app.
-
-If you want to contribute but are unsure how to start, we have [a "good first issue" label](https://github.com/medplum/medplum/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) which is applied to newcomer-friendly issues. Take a look at [the full list of good first issues](https://github.com/medplum/medplum/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and pick something you like!
-
-**Ready to get started writing code?** Follow the [local setup instructions](https://www.medplum.com/docs/contributing/local-dev-setup) and jump in!
-
-### Codebase
-
-#### Technologies
-
-With the ground rules out of the way, let's talk about the coarse architecture of this mono repo:
-
-- **Full-stack TypeScript**: We use Node.js to power our servers, and React to power our frontend apps. Almost all of the code you'll touch in this codebase will be TypeScript.
-
-Here is a list of all the big technologies we use:
-
-- **PostgreSQL**: Data storage
-- **Redis**: Background jobs and caching
-- **Express**: API server
-- **TypeScript**: Type-safe JavaScript
-- **React**: Frontend React app
-
-#### Folder structure
-
-```sh
-medplum/
-├── packages
-│   ├── agent           # On-premise agent
-│   ├── app             # Frontend web app
-│   ├── bot-layer       # AWS Lambda Layer for Bots
-│   ├── cdk             # AWS CDK infra as code
-│   ├── cli             # Command line interface
-│   ├── core            # Core shared library
-│   ├── definitions     # Data definitions
-│   ├── docs            # Documentation
-│   ├── examples        # Example code used in documentation
-│   ├── expo-polyfills  # Expo polyfills for MedplumClient compatibility
-│   ├── fhir-router     # FHIR URL router
-│   ├── fhirtypes       # FHIR TypeScript definitions
-│   ├── generator       # Code generator utilities
-│   ├── graphiql        # Preconfigured GraphiQL
-│   ├── hl7             # HL7 client and server
-│   ├── mock            # Mock FHIR data for testing
-│   ├── react           # React component library
-│   ├── react-hooks     # React hooks library
-│   └── server          # Backend API server
-└── scripts             # Helper bash scripts
-```
-
-## Thanks
-
-<a href="https://www.chromatic.com/"><img src="https://user-images.githubusercontent.com/321738/84662277-e3db4f80-af1b-11ea-88f5-91d67a5e59f6.png" width="153" height="30" alt="Chromatic" /></a>
-
-Thanks to [Chromatic](https://www.chromatic.com/) for providing the visual testing platform that helps us review UI changes and catch visual regressions.
-
-## License
-
-[Apache 2.0](LICENSE.txt)
-
-Copyright &copy; Medplum 2025
-
-FHIR&reg; is a registered trademark of HL7.
-
-SNOMED&reg; is a registered trademark of the International Health Terminology Standards Development Organisation.
-
-LOINC&reg; is a registered trademark of Regenstrief Institute, Inc.
-
-DICOM&reg; is the registered trademark of the National Electrical Manufacturers Association (NEMA).
-
-
-------------------------------------------------------
-
-# SHIFT Task Force Demo Deployment
-
-This project provides a comprehensive setup for facilitating the demonstration of the Security Label Service (SLS) and Batch Orchestrator for the SHIFT Task Force. It leverages [Medplum](https://github.com/medplum/medplum) as a FHIR data store with built-in `meta.security` support and FHIR subscription capabilities. One demo application can be developed to allow users to create new FHIR resources, view the original and labeled resources side by side, and visualize the resources graphically.
-
-## Project Overview
-
-This repository contains the configuration needed to deploy the necessary components to Fly.io, including a demo application to facilitate the creation and visualization of FHIR resources with security labels.
-
-## Folder Structure
-
-- **medplum-postgres**: PostgreSQL database configuration for Medplum
-
-  - Contains Dockerfile, initialization scripts, and Fly.io configuration
-  - Persistent storage via Fly volumes
-
-- **medplum-redis**: Redis cache configuration for Medplum
-
-  - Contains Dockerfile, entrypoint script, and Fly.io configuration
-  - Used for session management and caching
-
-- **medplum-backend**: Medplum server backend configuration
-
-  - Contains Node.js application Dockerfile and Fly.io configuration
-  - Provides the FHIR API and core Medplum functionality
-  - The `$meta-add` and `$meta-delete` operations can be added to the FHIR API to support the SLS, but they are not ready yet.
-  - Hosted at [medplum-backend.fly.io](https://medplum-backend.fly.io)
-
-- **medplum-admin**: Medplum admin interface
-
-  - Contains Dockerfile for the admin web interface and Fly.io configuration
-  - Provides the web UI for managing Medplum Backend, such as creating Subscriptions and viewing resources
-  - Hosted at [medplum-admin.fly.io](https://medplum-admin.fly.io)
-
-- **demo-app**: Demo application to facilitate sending POST requests to create new FHIR resources, display original and labeled resources side by side, and visualize resources graphically.
-
-## Local Development
-
-### Prerequisites
-
-- Docker and Docker Compose
-- Node.js (recommended v20.x)
-- Git
-
-### Running Locally
-
-1. Clone this repository:
-
-   ```sh
-   git clone https://github.com/your-username/medplum-fly-deployment.git
-   cd medplum-fly-deployment
-   ```
-
-2. Start the required services using Docker Compose:
-
-   ```sh
-   docker-compose up --build
-   ```
-
-   This will start PostgreSQL and Redis services on your local machine.
-
-3. Access the services:
-
-   - PostgreSQL: localhost:5432 (username: medplum, password: medplum)
-   - Redis: localhost:6379 (password: medplum)
-
-4. Start the Medplum backend:
-
-   ```sh
-   cd medplum-backend/server
-   npm install
-   npm run dev
-   ```
-
-5. Start the Medplum admin interface:
-
-   ```sh
-   cd medplum-admin/app
-   npm install
-   npm run dev
-   ```
-
-6. Start the demo application:
-   ```sh
-   cd demo-app
-   npm install
-   npm start
-   ```
-
-## Deploying to Fly.io
+This section describes how to set up a complete new deployment of the SHIFT Task Force demo environment on Fly.io.
 
 ### Prerequisites
 
 - [Fly.io account](https://fly.io/signup)
 - [Flyctl installed](https://fly.io/docs/hands-on/install-flyctl/)
+- Authenticated with Fly.io: `fly auth login`
 
-### Deployment Steps
+### Deployment Process
 
-1. Authenticate with Fly.io:
+#### 1. Deploy Core Infrastructure
+
+```sh
+# 1. Deploy PostgreSQL database
+./scripts/deploy-shift-postgres-flyio.sh [custom-app-name]
+
+# 2. Deploy Redis cache
+./scripts/deploy-shift-redis-flyio.sh [custom-app-name]
+
+# 3. Deploy the Medplum backend server
+./scripts/deploy-shift-server-flyio.sh [-n server-app-name] [-a admin-app-name] [-p postgres-app-name] [-r redis-app-name]
+
+# 4. Deploy the Medplum admin interface
+./scripts/deploy-shift-app-flyio.sh [-n server-app-name] [-a admin-app-name]
+```
+
+#### 2. Set Up EHR Environments
+
+1. **Create Users and Projects**:
+
+   - Create two users for Source EHR and Target EHR
+   - Set up separate projects for each EHR
+
+2. **Load Demo Data**:
+
+   - Clone the demo FHIR data: `git clone https://github.com/SHIFT-Task-Force/demo-fhir-data`
+   - Upload resources to the Source EHR through Batch Upload
+
+3. **Create Consent Resource**:
+   Create a Consent resource in the Source EHR:
+
+```json
+{
+  "resourceType": "Consent",
+  "status": "active",
+  "scope": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/consentscope",
+        "code": "patient-privacy",
+        "display": "Privacy Consent"
+      }
+    ]
+  },
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/consentscope",
+          "code": "patient-privacy",
+          "display": "Privacy Consent"
+        }
+      ]
+    }
+  ],
+  "patient": {
+    "reference": "Patient/0197837a-cb6c-72e2-9f3f-b9dec6c0f4d7",
+    "display": "Carl Frederickson"
+  },
+  "policyRule": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/consentpolicycodes",
+        "code": "hipaa-self-pay",
+        "display": "HIPAA Self-Pay Restriction"
+      }
+    ]
+  },
+  "provision": {
+    "type": "permit",
+    "provision": [
+      {
+        "type": "deny",
+        "securityLabel": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality",
+            "code": "R"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 3. Configure Client Applications
+
+1. **Source EHR Client Application for CDS Service**:
+
+   - Create a Client Application in the Source EHR project
+   - Get a long-lived access token using [medplum-oauth](https://github.com/SHIFT-Task-Force/medplum-oauth)
+
+2. **Target EHR Client Application for Resource Creation**:
+
+   - Create a Client Application in the Target EHR project
+   - Note the Client ID and Secret
+
+3. **Source EHR Client Application for SMART App Launch**:
+   - Create another Client Application in the Source EHR project
+   - This will be configured after deploying the SMART app
+
+#### 4. Deploy Supporting Services
+
+##### Deploy SLS Service
+
+1. Clone the repository:
 
    ```sh
-   fly auth login
+   git clone https://github.com/SHIFT-Task-Force/leap-sls
    ```
 
-2. Deploy the PostgreSQL database:
+2. Follow the repository's instructions to deploy to Fly.io
+
+##### Deploy CDS Service
+
+1. Clone the repository:
 
    ```sh
-   cd medplum-postgres
-   fly launch # Skip this if you've already created the app
-   fly deploy
+   git clone https://github.com/SHIFT-Task-Force/leap-cds-plus
    ```
 
-3. Deploy the Redis cache:
+2. Configure environment variables:
+
+   ```
+   CONSENT_FHIR_SERVERS=https://[your-medplum-server].fly.dev/fhir/R4
+   CONSENT_FHIR_SERVERS_AUTH='{"http://medplum-backend.fly.dev/fhir/R4": {"type": "bearer","auth_token": "[long-lived-access-token]"}}'
+   ```
+
+3. Deploy the service to Fly.io
+
+#### 5. Deploy SMART EHR-to-EHR Demo App
+
+1. **Prepare Environment Variables**:
 
    ```sh
-   cd ../medplum-redis
-   fly launch # Skip this if you've already created the app
-   fly deploy
+   # Navigate to the demo app directory
+   cd examples/shift-ehr-2-ehr-demo
+
+   # Copy example environment file
+   cp .env.example .env.production
    ```
 
-4. Deploy the Medplum backend:
+2. **Update Environment Variables**:
+   Update `.env.production` with the actual domains of your deployed instances:
+
+   ```
+   # Use your actual deployed service URLs
+   VITE_MEDPLUM_BASE_URL=https://[your-medplum-server].fly.dev/
+   VITE_SLS_SERVICE_BASE_URL=https://[your-sls-service].fly.dev/
+   VITE_CDS_SERVICE_BASE_URL=https://[your-cds-service].fly.dev/
+
+   # Target EHR credentials from Step 3.2
+   VITE_TARGET_CLIENT_ID=[target-client-id]
+   VITE_TARGET_CLIENT_SECRET=[target-client-secret]
+   ```
+
+3. **Deploy the SMART App**:
 
    ```sh
-   cd ../medplum-backend
-   fly launch # Skip this if you've already created the app
-   fly deploy
+   ./scripts/deploy-shift-smart-ehr-2-ehr-app-flyio.sh [-n server-app-name] [-a app-name] [-e production]
    ```
 
-5. Deploy the Medplum admin interface:
+4. **Complete SMART App Registration**:
 
-   ```sh
-   cd ../medplum-admin
-   fly launch # Skip this if you've already created the app
-   fly deploy
-   ```
+   - Update the Source EHR SMART App Client Application:
+     - Set redirect URL to `https://[app-name].fly.dev/launch`
+     - Set launch URL to `https://[app-name].fly.dev/launch`
+     - Check PKCE Optional
+   - Note the Client ID
 
-6. Deploy the demo application:
+5. **Update App Configuration and Redeploy**:
+   - Add to `.env.production`:
+     ```
+     VITE_MEDPLUM_CLIENT_ID=[smart-app-client-id]
+     ```
+   - Redeploy the app:
+     ```sh
+     ./scripts/deploy-shift-smart-ehr-2-ehr-app-flyio.sh [-n server-app-name] [-a app-name] [-e production]
+     ```
 
-   ```sh
-   cd ../demo-app
-   fly launch # Skip this if you've already created the app
-   fly deploy
-   ```
+## Project Details
 
-7. Verify the deployment:
-   ```sh
-   fly status
-   ```
+### What is Medplum?
 
-## Configuration
+[Medplum](https://www.medplum.com) is a developer platform that enables flexible and rapid development of healthcare apps with:
 
-Each service is configured through its respective `fly.toml` file. The Medplum backend environment variables in `medplum-backend/fly.toml` control the functionality of the platform.
+- FHIR-based API for healthcare data exchange
+- Authentication using OAuth, OpenID, and SMART-on-FHIR
+- Clinical Data Repository (CDR)
+- Bot framework for server-side automation
+
+For complete documentation on Medplum itself, visit the [main Medplum repository](https://github.com/medplum/medplum).
+
+### Repository Structure
+
+This repository follows the standard Medplum structure with additional deployment scripts for Fly.io:
+
+- **`scripts/`**: Contains deployment scripts for various components
+  - `deploy-shift-postgres-flyio.sh` - Deploy PostgreSQL database
+  - `deploy-shift-redis-flyio.sh` - Deploy Redis cache
+  - `deploy-shift-server-flyio.sh` - Deploy Medplum backend server
+  - `deploy-shift-app-flyio.sh` - Deploy Medplum admin interface
+  - `deploy-shift-smart-ehr-2-ehr-app-flyio.sh` - Deploy the SMART EHR-to-EHR demo app
+
+## SMART EHR-to-EHR Demo Application
+
+The demo application showcases privacy-respecting interoperability using the Security Label Service (SLS) and Consent Decision Service (CDS). It demonstrates:
+
+1. Authenticating with source EHR using SMART App Launch Framework
+2. Retrieving patient data from the source EHR
+3. Using the SLS to apply appropriate security labels to the data based on content
+4. Using the CDS to filter data based on patient consent preferences
+5. Transferring appropriately labeled and filtered data to a target EHR
+
+This workflow demonstrates the practical implementation of:
+
+- **Security Label Service (SLS)**: Analyzes clinical data to detect sensitive information and applies appropriate security labels following the HL7 Healthcare Privacy and Security Classification System. For detailed information about the SLS implementation, see the [LEAP SLS repository](https://github.com/SHIFT-Task-Force/leap-sls).
+
+- **Consent Decision Service (CDS)**: Enforces patient privacy preferences by evaluating security-labeled resources against consent policies, determining what data can be shared. For more about the CDS implementation, see the [LEAP CDS Plus repository](https://github.com/SHIFT-Task-Force/leap-cds-plus).
+
+Together, these services enable privacy-preserving data exchange while respecting patient consent preferences.
 
 ## Troubleshooting
 
 - Check service logs: `fly logs -a [app-name]`
 - SSH into a VM: `fly ssh console -a [app-name]`
 - View service status: `fly status -a [app-name]`
+
+## Related Repositories
+
+- [LEAP CDS Plus Service](https://github.com/SHIFT-Task-Force/leap-cds-plus) - Consent Decision Service that enforces patient privacy preferences
+- [LEAP SLS Service](https://github.com/SHIFT-Task-Force/leap-sls) - Security Labeling Service that identifies and labels sensitive information
+- [Medplum OAuth Helper](https://github.com/SHIFT-Task-Force/medplum-oauth) - Tool for obtaining long-lived access tokens
+- [Demo FHIR Data](https://github.com/SHIFT-Task-Force/demo-fhir-data) - Sample FHIR resources for demonstration
+
+## Additional Resources
+
+- [Medplum Documentation](https://www.medplum.com/docs)
+- [SMART App Launch Framework](https://hl7.org/fhir/smart-app-launch/)
+- [Fly.io Documentation](https://fly.io/docs/)
+- [Fly.io Documentation](https://fly.io/docs/)
