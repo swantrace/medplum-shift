@@ -14,18 +14,13 @@ The demo environment is already set up and ready for testing at [medplum-admin.f
 
 ### Access the Demo
 
-1. Login to the Source EHR at [medplum-admin.fly.dev](https://medplum-admin.fly.dev) with:
-
-   - **Username**: shift_ehr1@example.com
-   - **Password**: medplum_admin
+1. Login to the Source EHR at [medplum-admin.fly.dev](https://medplum-admin.fly.dev) with credentials provided by the administrator
 
 2. Set up easy account switching:
    - Click on your username in the left corner
    - Select "EHR1 SHIFT" in the dropdown menu
    - Click "Add another account"
-   - Login with the Target EHR credentials:
-     - **Username**: shift_ehr2@example.com
-     - **Password**: medplum_admin
+   - Login with the Target EHR credentials provided by the administrator
    - Now you can easily switch between the two EHRs using the account dropdown
 
 ### Run the Demo
@@ -40,7 +35,7 @@ The demo environment is already set up and ready for testing at [medplum-admin.f
 
 To reset the environment for the next demo:
 
-1. Switch to the Target EHR (shift_ehr2@example.com account)
+1. Switch to the Target EHR account
 2. Navigate to each resource type that was transferred
 3. Select the transferred resources
 4. Click "Delete" to remove them from the target EHR
@@ -73,19 +68,53 @@ This section describes how to set up a complete new deployment of the SHIFT Task
 ./scripts/deploy-shift-app-flyio.sh [-n server-app-name] [-a admin-app-name]
 ```
 
-#### 2. Set Up EHR Environments
+#### 2. Create Initial Admin User
 
-1. **Create Users and Projects**:
+After deploying the infrastructure, you need to create the first admin user:
 
-   - Create two users for Source EHR and Target EHR
-   - Set up separate projects for each EHR
+1. **Create Super Admin User**:
 
-2. **Load Demo Data**:
+   ```sh
+   # SSH into your Medplum server
+   fly ssh console -a [server-app-name]
+
+   # Inside the server, run the create super admin command
+   node dist/index.js create-super-admin [admin-email] [secure-password]
+   ```
+
+2. **Access Admin Interface**:
+   - Navigate to `https://[admin-app-name].fly.dev/`
+   - Login with the super admin credentials you just created
+
+#### 3. Set Up EHR Environments
+
+1. **Create Projects for Source and Target EHRs**:
+
+   - In the admin interface, go to "Projects"
+   - Create a new project for "Source EHR" (e.g., "EHR1 SHIFT")
+   - Create another project for "Target EHR" (e.g., "EHR2 SHIFT")
+   - Note the project IDs for later use
+
+2. **Create Users for Each EHR**:
+
+   - In the admin interface, go to "Users"
+   - Create a user for Source EHR:
+     - Email: Use your organization's email pattern
+     - Password: Create a secure password
+     - Assign to the Source EHR project
+   - Create a user for Target EHR:
+     - Email: Use your organization's email pattern
+     - Password: Create a secure password
+     - Assign to the Target EHR project
+
+3. **Load Demo Data**:
 
    - Clone the demo FHIR data: `git clone https://github.com/SHIFT-Task-Force/demo-fhir-data`
-   - Upload resources to the Source EHR through Batch Upload
+   - Login to the Source EHR using the created user credentials
+   - Navigate to "Batch Upload" and upload the FHIR resources from the demo repository
+   - Verify the resources were uploaded successfully
 
-3. **Create Consent Resource**:
+4. **Create Consent Resource**:
    Create a Consent resource in the Source EHR:
 
 ```json
@@ -142,23 +171,31 @@ This section describes how to set up a complete new deployment of the SHIFT Task
 }
 ```
 
-#### 3. Configure Client Applications
+#### 4. Configure Client Applications
 
 1. **Source EHR Client Application for CDS Service**:
 
-   - Create a Client Application in the Source EHR project
+   - Login as the Source EHR user
+   - Navigate to "Client Applications" and create a new application
+   - Set a meaningful name like "CDS Service Client"
+   - Note the Client ID for later use
    - Get a long-lived access token using [medplum-oauth](https://github.com/SHIFT-Task-Force/medplum-oauth)
+   - Store this token securely as it will be used by the CDS service
 
 2. **Target EHR Client Application for Resource Creation**:
 
-   - Create a Client Application in the Target EHR project
-   - Note the Client ID and Secret
+   - Login as the Target EHR user
+   - Create a Client Application for the SMART app to create resources in the target EHR
+   - Set a meaningful name like "Target EHR Resource Creator"
+   - Note the Client ID and Secret for later use in environment variables
 
 3. **Source EHR Client Application for SMART App Launch**:
-   - Create another Client Application in the Source EHR project
+   - Login as the Source EHR user
+   - Create another Client Application for the SMART app launching
+   - Set a meaningful name like "SMART EHR-to-EHR App"
    - This will be configured after deploying the SMART app
 
-#### 4. Deploy Supporting Services
+#### 5. Deploy Supporting Services
 
 ##### Deploy SLS Service
 
@@ -182,12 +219,12 @@ This section describes how to set up a complete new deployment of the SHIFT Task
 
    ```
    CONSENT_FHIR_SERVERS=https://[your-medplum-server].fly.dev/fhir/R4
-   CONSENT_FHIR_SERVERS_AUTH='{"http://medplum-backend.fly.dev/fhir/R4": {"type": "bearer","auth_token": "[long-lived-access-token]"}}'
+   CONSENT_FHIR_SERVERS_AUTH='{"https://[your-medplum-server].fly.dev/fhir/R4": {"type": "bearer","auth_token": "[your-long-lived-access-token]"}}'
    ```
 
 3. Deploy the service to Fly.io
 
-#### 5. Deploy SMART EHR-to-EHR Demo App
+#### 6. Deploy SMART EHR-to-EHR Demo App
 
 1. **Prepare Environment Variables**:
 
@@ -208,9 +245,9 @@ This section describes how to set up a complete new deployment of the SHIFT Task
    VITE_SLS_SERVICE_BASE_URL=https://[your-sls-service].fly.dev/
    VITE_CDS_SERVICE_BASE_URL=https://[your-cds-service].fly.dev/
 
-   # Target EHR credentials from Step 3.2
-   VITE_TARGET_CLIENT_ID=[target-client-id]
-   VITE_TARGET_CLIENT_SECRET=[target-client-secret]
+   # Target EHR credentials - use environment variables or secure configuration
+   VITE_TARGET_CLIENT_ID=[your-target-client-id]
+   VITE_TARGET_CLIENT_SECRET=[your-target-client-secret]
    ```
 
 3. **Deploy the SMART App**:
@@ -230,7 +267,7 @@ This section describes how to set up a complete new deployment of the SHIFT Task
 5. **Update App Configuration and Redeploy**:
    - Add to `.env.production`:
      ```
-     VITE_MEDPLUM_CLIENT_ID=[smart-app-client-id]
+     VITE_MEDPLUM_CLIENT_ID=[your-smart-app-client-id]
      ```
    - Redeploy the app:
      ```sh
@@ -279,6 +316,15 @@ This workflow demonstrates the practical implementation of:
 
 Together, these services enable privacy-preserving data exchange while respecting patient consent preferences.
 
+## Security Considerations
+
+- Store all credentials securely using environment variables or secure configuration management
+- Use strong, unique passwords for all accounts
+- Regularly rotate access tokens and API keys
+- Never commit credentials to version control
+- Use HTTPS for all communications
+- Follow your organization's security policies for credential management
+
 ## Troubleshooting
 
 - Check service logs: `fly logs -a [app-name]`
@@ -296,5 +342,4 @@ Together, these services enable privacy-preserving data exchange while respectin
 
 - [Medplum Documentation](https://www.medplum.com/docs)
 - [SMART App Launch Framework](https://hl7.org/fhir/smart-app-launch/)
-- [Fly.io Documentation](https://fly.io/docs/)
 - [Fly.io Documentation](https://fly.io/docs/)
